@@ -3,11 +3,95 @@
  */
 package ticket.booking;
 
+import ticket.booking.entities.Train;
+import ticket.booking.entities.User;
+import ticket.booking.services.UserBookingService;
+import ticket.booking.utils.UserServiceUtil;
+
+import java.io.IOException;
+import java.util.*;
+
 public class App {
-    public String getGreeting() {
-        return "Hello World!";
-    }
     public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+        System.out.println("Running Train Booking System!");
+
+        Scanner sc = new Scanner(System.in);
+        int option = 0;
+        UserBookingService userBookingService;
+
+        try{
+//            the first time program runs it loads the DB;
+            userBookingService = new UserBookingService();
+
+        }catch (IOException ex){
+            System.out.println("There is something wrong");
+            return;
+        }
+
+        while (option != 7){
+            System.out.println("Choose Option");
+            System.out.println("1. Sign up");
+            System.out.println("2. Login");
+            System.out.println("3. Fetch Bookings");
+            System.out.println("4. Search Trains");
+            System.out.println("5. Book a Seat");
+            System.out.println("6. Cancel my Booking");
+            System.out.println("7. Exit the App");
+
+            option = sc.nextInt();
+
+            switch (option){
+                case 1:
+                    System.out.println("Enter your Username");
+                    String usernameSignUp = sc.next();
+                    System.out.println("Enter your Password");
+                    String passwordSignUp = sc.next();
+                    User userToSignUp = new User(usernameSignUp, passwordSignUp, UserServiceUtil.hashPassword(passwordSignUp), new ArrayList<>(), UUID.randomUUID().toString());
+                    userBookingService.signUp(userToSignUp);
+                    break;
+
+                case 2:
+                    System.out.println("Enter your Username");
+                    String usernameLogin = sc.next();
+                    System.out.println("Enter your Password");
+                    String passwordLogin = sc.next();
+                    User userToLogin = new User(usernameLogin, passwordLogin, UserServiceUtil.hashPassword(passwordLogin), new ArrayList<>(), UUID.randomUUID().toString());
+
+                    try{
+//                        Now we have store the user globally;
+                        userBookingService = new UserBookingService(userToLogin);
+                    }
+                    catch (IOException ex){
+                        return;
+                    }
+
+                    break;
+
+                case 3:
+                    System.out.println("Fetching Bookings");
+                    userBookingService.fetchBooking();
+                    break;
+
+                case 4:
+                    System.out.println("Enter Source Station");
+                    String sourceStation = sc.next();
+                    System.out.println("Enter Destination Station");
+                    String destinationStation = sc.next();
+
+                    List<Train> trains = userBookingService.getTrains(sourceStation, destinationStation);
+                    int idx = 1;
+                    for(Train train : trains){
+                        System.out.println(idx + "Train Id : " + train.getTrainId());
+                        for(Map.Entry<String , String> entry : train.getStationTimes().entrySet()){
+                            System.out.println("Station " +  entry.getKey() + " Time: " + entry.getValue());
+                        }
+                    }
+
+                    System.out.println("Select Train By Typing 1,2,3....");
+                    Train trainSelectedForBooking = trains.get(sc.nextInt());
+
+                    break;
+            }
+        }
     }
 }
