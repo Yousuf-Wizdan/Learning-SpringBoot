@@ -2,6 +2,7 @@ package ticket.booking.services;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ticket.booking.entities.Ticket;
 import ticket.booking.entities.Train;
 import ticket.booking.entities.User;
 import ticket.booking.utils.UserServiceUtil;
@@ -68,7 +69,7 @@ public class UserBookingService {
         user.printTickets();
     }
 
-    public boolean cancelBooking(String ticketId){
+    public boolean cancelBooking(String ticketId) {
         boolean remove = user.getTicketBooked().removeIf(ticket -> ticket.getTicketId().equals(ticketId));
         if(remove){
             System.out.println("Ticket with ID " + ticketId + " has been canceled.");
@@ -78,6 +79,11 @@ public class UserBookingService {
             System.out.println("Ticket with ID " + ticketId + " has been cancelled.");
             return false;
         }
+
+    }
+
+    public List<Ticket> getBookings(){
+        return user.getTicketBooked();
     }
 
     public List<Train> getTrains(String source, String destination){
@@ -89,6 +95,37 @@ public class UserBookingService {
             return new ArrayList<>();
         }
     }
+
+    public List<List<Integer>> fetchSeats(Train train1){
+        return train1.getSeats();
+    }
+
+    public Boolean bookTrainTicket(Train train, int row, int col){
+        try{
+            TrainService trainService = new TrainService();
+            List<List<Integer>> seats = train.getSeats();
+
+            if (row >= 0 && col >= 0 && row < seats.size() && col < seats.get(row).size())
+            {
+                if(seats.get(row).get(col) == 0){
+                    seats.get(row).set(col , 1);
+                    train.setSeats(seats);
+                    trainService.addTrain(train);
+                    return true;
+                }
+                else{
+                    return false;
+                }
+            }
+            else {
+                return false;
+            }
+
+        }catch (IOException ex){
+            return false;
+        }
+    }
+
 
 
 

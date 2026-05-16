@@ -8,7 +8,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class TrainService {
 
@@ -36,6 +39,34 @@ public class TrainService {
         return trainList.stream().filter(train1 -> isValid(train1, sourceStation , destinationStation)).collect(Collectors.toList());
     }
 
+    public void addTrain(Train newTrain) throws IOException {
+
+        Optional<Train> existingTrain = trainList.stream().filter(train1 -> train1.getTrainId().equalsIgnoreCase(newTrain.getTrainId())).findFirst();
+
+        if(existingTrain.isPresent()){
+            updateTrain(newTrain);
+        }
+        else{
+            trainList.add(newTrain);
+            saveTrainListToFile();
+        }
+
+    }
+
+    public void updateTrain(Train newTrain) throws IOException {
+
+        OptionalInt idx = IntStream.range(0, trainList.size()).filter(i -> trainList.get(i).getTrainId().equalsIgnoreCase(newTrain.getTrainId())).findFirst();
+
+        if(idx.isPresent()){
+            trainList.set(idx.getAsInt(), newTrain);
+            saveTrainListToFile();
+        }
+        else{
+            addTrain(newTrain);
+        }
+
+    }
+
     public boolean isValid(Train train1, String sourceStation, String destinationStation) {
         List<String> trains = train.getStations();
 
@@ -43,6 +74,11 @@ public class TrainService {
         int destIdx = trains.indexOf(destinationStation.toLowerCase());
 
         return srcIdx != -1 && destIdx != -1 && srcIdx < destIdx;
+    }
+
+    private void saveTrainListToFile() throws IOException {
+        File trainFile = new File(TRAINS_PATH);
+        objectMapper.writeValue(trainFile, trainList);
     }
 
 

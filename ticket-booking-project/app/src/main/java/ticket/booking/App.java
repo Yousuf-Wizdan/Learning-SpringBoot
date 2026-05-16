@@ -3,6 +3,7 @@
  */
 package ticket.booking;
 
+import ticket.booking.entities.Ticket;
 import ticket.booking.entities.Train;
 import ticket.booking.entities.User;
 import ticket.booking.services.UserBookingService;
@@ -27,6 +28,8 @@ public class App {
             System.out.println("There is something wrong");
             return;
         }
+
+        Train trainSelectedForBooking = null;
 
         while (option != 7){
             System.out.println("Choose Option");
@@ -85,12 +88,75 @@ public class App {
                         for(Map.Entry<String , String> entry : train.getStationTimes().entrySet()){
                             System.out.println("Station " +  entry.getKey() + " Time: " + entry.getValue());
                         }
+                        idx++;
                     }
 
                     System.out.println("Select Train By Typing 1,2,3....");
-                    Train trainSelectedForBooking = trains.get(sc.nextInt());
+
+                    trainSelectedForBooking = trains.get(sc.nextInt());
 
                     break;
+
+                case 5:
+                    if(trainSelectedForBooking == null){
+                        System.out.println("Select A Train First!");
+                        break;
+                    }
+
+                    System.out.println("Select a seat out of these seats!");
+                    List<List<Integer>> seats = userBookingService.fetchSeats(trainSelectedForBooking);
+                    for(List<Integer> row : seats){
+                        for(int val : row){
+                            System.out.print(val + " ");
+                        }
+                        System.out.println();
+                    }
+
+                    System.out.println("Select the seat by typing the row and column!");
+
+                    System.out.println("Enter the row");
+                    int row = sc.nextInt();
+
+                    System.out.println("Enter the column");
+                    int col = sc.nextInt();
+
+                    System.out.println("Booking your ticket.....");
+
+                    Boolean booked = userBookingService.bookTrainTicket(trainSelectedForBooking, row, col);
+
+                    if(booked){
+                        System.out.println("Ticket Booked Successfully!");
+                    }
+                    else{
+                        System.out.println("Can't book this ticket!");
+                    }
+                    break;
+
+                case 6:
+                    int calIdx = 1;
+                    List<Ticket> bookings = userBookingService.getBookings();
+                    for(Ticket booking : bookings){
+                        System.out.println(calIdx + " " + booking.getTicketInfo());
+                        calIdx++;
+                    }
+
+                    Boolean status = userBookingService.cancelBooking(bookings.get(sc.nextInt()).getTicketId());
+                    if(status){
+                        System.out.println("Ticket Cancelled Successfully!");
+                    }
+                    else{
+                        System.out.println("Can't cancel this ticket!");
+                    }
+
+                    break;
+
+                case 7:
+                    break;
+
+                default:
+                    System.out.println("Invalid Option!");
+                    break;
+
             }
         }
     }
