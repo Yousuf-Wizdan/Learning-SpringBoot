@@ -12,7 +12,7 @@
 
 ## 📖 About
 
-This repository documents my journey of learning and mastering :contentReference[oaicite:0]{index=0}.
+This repository documents my journey of learning and mastering Spring Boot.
 
 Here I’ll be:
 - Building mini projects
