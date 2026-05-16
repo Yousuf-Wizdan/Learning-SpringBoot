@@ -19,6 +19,7 @@ public class App {
         Scanner sc = new Scanner(System.in);
         int option = 0;
         UserBookingService userBookingService;
+        boolean loggedIn = false;
 
         try{
 //            the first time program runs it loads the DB;
@@ -41,6 +42,11 @@ public class App {
             System.out.println("6. Cancel my Booking");
             System.out.println("7. Exit the App");
 
+            if(!sc.hasNextInt()){
+                System.out.println("No more input. Exiting the app.");
+                break;
+            }
+
             option = sc.nextInt();
 
             switch (option){
@@ -62,7 +68,15 @@ public class App {
 
                     try{
 //                        Now we have store the user globally;
-                        userBookingService = new UserBookingService(userToLogin);
+                        UserBookingService loginService = new UserBookingService(userToLogin);
+                        if(loginService.loginUser()){
+                            userBookingService = loginService;
+                            loggedIn = true;
+                            System.out.println("Login successful!");
+                        }
+                        else{
+                            System.out.println("Invalid username or password!");
+                        }
                     }
                     catch (IOException ex){
                         return;
@@ -71,6 +85,10 @@ public class App {
                     break;
 
                 case 3:
+                    if(!loggedIn){
+                        System.out.println("Please login first!");
+                        break;
+                    }
                     System.out.println("Fetching Bookings");
                     userBookingService.fetchBooking();
                     break;
@@ -91,13 +109,28 @@ public class App {
                         idx++;
                     }
 
+                    if(trains.isEmpty()){
+                        System.out.println("No trains found for the selected route.");
+                        break;
+                    }
+
                     System.out.println("Select Train By Typing 1,2,3....");
 
-                    trainSelectedForBooking = trains.get(sc.nextInt());
+                    int selectedTrainIndex = sc.nextInt() - 1;
+                    if(selectedTrainIndex < 0 || selectedTrainIndex >= trains.size()){
+                        System.out.println("Invalid train selection!");
+                        break;
+                    }
+
+                    trainSelectedForBooking = trains.get(selectedTrainIndex);
 
                     break;
 
                 case 5:
+                    if(!loggedIn){
+                        System.out.println("Please login first!");
+                        break;
+                    }
                     if(trainSelectedForBooking == null){
                         System.out.println("Select A Train First!");
                         break;
@@ -122,7 +155,7 @@ public class App {
 
                     System.out.println("Booking your ticket.....");
 
-                    Boolean booked = userBookingService.bookTrainTicket(trainSelectedForBooking, row, col);
+                    boolean booked = userBookingService.bookTrainTicket(trainSelectedForBooking, row, col);
 
                     if(booked){
                         System.out.println("Ticket Booked Successfully!");
@@ -133,14 +166,28 @@ public class App {
                     break;
 
                 case 6:
+                    if(!loggedIn){
+                        System.out.println("Please login first!");
+                        break;
+                    }
                     int calIdx = 1;
                     List<Ticket> bookings = userBookingService.getBookings();
+                    if(bookings == null || bookings.isEmpty()){
+                        System.out.println("No bookings found.");
+                        break;
+                    }
                     for(Ticket booking : bookings){
                         System.out.println(calIdx + " " + booking.getTicketInfo());
                         calIdx++;
                     }
 
-                    Boolean status = userBookingService.cancelBooking(bookings.get(sc.nextInt()).getTicketId());
+                    int bookingIndex = sc.nextInt() - 1;
+                    if(bookingIndex < 0 || bookingIndex >= bookings.size()){
+                        System.out.println("Invalid booking selection!");
+                        break;
+                    }
+
+                    boolean status = userBookingService.cancelBooking(bookings.get(bookingIndex).getTicketId());
                     if(status){
                         System.out.println("Ticket Cancelled Successfully!");
                     }

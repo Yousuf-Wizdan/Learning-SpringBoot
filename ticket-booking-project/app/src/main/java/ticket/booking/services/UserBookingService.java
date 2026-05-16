@@ -8,6 +8,7 @@ import ticket.booking.entities.User;
 import ticket.booking.utils.UserServiceUtil;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +19,11 @@ public class UserBookingService {
     private User user;
     private List<User> userList;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
-    private static final String USERS_PATH = "app/src/main/java/ticket/booking/localDb/users.json";
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private static final String[] USERS_PATHS = {
+            "src/main/java/ticket/booking/localDb/users.json",
+            "app/src/main/java/ticket/booking/localDb/users.json"
+    };
 
     public UserBookingService() throws IOException {
         loadUsers();
@@ -37,8 +41,18 @@ public class UserBookingService {
     }
 
     public void loadUsers() throws IOException{
-        File users = new File(USERS_PATH);
+        File users = resolveDataFile(USERS_PATHS);
         userList = objectMapper.readValue(users, new TypeReference<List<User>>() {});
+    }
+
+    private File resolveDataFile(String[] paths) throws FileNotFoundException {
+        for (String path : paths) {
+            File file = new File(path);
+            if (file.exists()) {
+                return file;
+            }
+        }
+        throw new FileNotFoundException("Could not locate users.json in any expected path.");
     }
 
     public boolean loginUser(){
@@ -59,7 +73,7 @@ public class UserBookingService {
     }
 
     private void saveUserListToFile() throws IOException {
-        File userFiles = new File(USERS_PATH);
+        File userFiles = resolveDataFile(USERS_PATHS);
         objectMapper.writeValue(userFiles , userList);
     }
 //    json --> Object(User) = deserialize

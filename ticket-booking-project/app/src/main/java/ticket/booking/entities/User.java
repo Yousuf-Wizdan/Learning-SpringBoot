@@ -1,13 +1,18 @@
 package ticket.booking.entities;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 public class User {
 
     private String name;
     private String password;
+    @JsonProperty("hashed_password")
     private String hashedPassword;
+    @JsonProperty("tickets_booked")
     private List<Ticket> ticketBooked;
+    @JsonProperty("user_id")
     private String userId;
 
     public User(String name , String password , String hashedPassword , List<Ticket> ticketBooked , String userId)
@@ -28,6 +33,10 @@ public class User {
 
     public String getPassword(){
         return password;
+    }
+
+    public void setPassword(String password){
+        this.password = password;
     }
 
     public String getHashedPassword(){

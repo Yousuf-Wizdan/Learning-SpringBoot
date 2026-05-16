@@ -1,14 +1,20 @@
 package ticket.booking.entities;
 
-import java.sql.Time;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 import java.util.Map;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Train {
 
+    @JsonProperty("train_id")
     private String trainId;
+    @JsonProperty("train_no")
     private String trainNo;
     private List<List<Integer>> seats;
+    @JsonProperty("station_times")
     private Map<String , String> stationTimes;
     private List<String> stations;
 

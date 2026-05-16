@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import ticket.booking.entities.Train;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -18,8 +18,11 @@ public class TrainService {
     private Train train;
     private List<Train> trainList;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
-    private static final String TRAINS_PATH = "app/src/main/java/ticket/booking/localDb/trains.json";
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private static final String[] TRAINS_PATHS = {
+            "src/main/java/ticket/booking/localDb/trains.json",
+            "app/src/main/java/ticket/booking/localDb/trains.json"
+    };
 
     public TrainService() throws IOException{
         loadTrains();
@@ -31,8 +34,18 @@ public class TrainService {
     }
 
     public void loadTrains() throws IOException {
-        File trains = new File(TRAINS_PATH);
-        trainList = objectMapper.readValue(trains, new TypeReference<List<Train>>() {});
+        File trains = resolveDataFile(TRAINS_PATHS);
+        trainList = objectMapper.readValue(trains, new TypeReference<>() {});
+    }
+
+    private File resolveDataFile(String[] paths) throws FileNotFoundException {
+        for (String path : paths) {
+            File file = new File(path);
+            if (file.exists()) {
+                return file;
+            }
+        }
+        throw new FileNotFoundException("Could not locate trains.json in any expected path.");
     }
 
     public List<Train> searchTrains(String sourceStation, String destinationStation) {
@@ -68,16 +81,16 @@ public class TrainService {
     }
 
     public boolean isValid(Train train1, String sourceStation, String destinationStation) {
-        List<String> trains = train.getStations();
+        List<String> stations = train1.getStations();
 
-        int srcIdx = trains.indexOf(sourceStation.toLowerCase());
-        int destIdx = trains.indexOf(destinationStation.toLowerCase());
+        int srcIdx = stations.indexOf(sourceStation.toLowerCase());
+        int destIdx = stations.indexOf(destinationStation.toLowerCase());
 
         return srcIdx != -1 && destIdx != -1 && srcIdx < destIdx;
     }
 
     private void saveTrainListToFile() throws IOException {
-        File trainFile = new File(TRAINS_PATH);
+        File trainFile = resolveDataFile(TRAINS_PATHS);
         objectMapper.writeValue(trainFile, trainList);
     }
 
